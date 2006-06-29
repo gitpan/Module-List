@@ -1,3 +1,11 @@
+version 0.001; 2006-06-29
+
+  * new "trivial_syntax" option for pseudo-bareword syntax
+
+  * versioned dependency on IO::Dir
+
+  * typo fix in documentation
+
 version 0.000; 2004-06-20
 
   * initial released version

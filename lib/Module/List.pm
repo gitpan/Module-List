@@ -27,9 +27,9 @@ use strict;
 
 use Carp qw(croak);
 use Exporter;
-use IO::Dir;
+use IO::Dir 1.03;
 
-our $VERSION = "0.000";
+our $VERSION = "0.001";
 
 our @ISA = qw(Exporter);
 
@@ -70,7 +70,24 @@ corresponding directory exists, even if there is nothing in it.
 =item list_pod
 
 Boolean, default false.  If true, return names of POD documentation
-files that are in the moudle namespace.
+files that are in the module namespace.
+
+=item trivial_syntax
+
+Boolean, default false.  If false, only valid bareword names are
+permitted.  If true, bareword syntax is ignored, and any "::"-separated
+name that can be turned into a correct filename by C<s!::!/!g> is
+permitted.  This is of no use in listing actual Perl modules, because the
+illegal names can't be used in Perl, but some programs such as B<perldoc>
+use a "::"-separated name for the sake of appearance without really
+using bareword syntax.  The loosened syntax applies both to the names
+returned and to the I<PREFIX> parameter.
+
+Precisely, the `trivial syntax' is that each "::"-separated component
+cannot be "." or "..", cannot contain "::" or "/", and (except for the
+final component of a leaf name) cannot end with ":".  This is precisely
+what is required to achieve a unique interconvertible "::"-separated
+path syntax.
 
 =item recurse
 
@@ -90,8 +107,21 @@ names of interest.  The value associated with each of these keys is undef.
 
 sub list_modules($$) {
 	my($prefix, $options) = @_;
+	my $trivial_syntax = $options->{trivial_syntax};
+	my($root_leaf_rx, $root_notleaf_rx);
+	my($notroot_leaf_rx, $notroot_notleaf_rx);
+	if($trivial_syntax) {
+		$root_leaf_rx = $notroot_leaf_rx = qr#:?(?:[^/:]+:)*[^/:]+:?#;
+		$root_notleaf_rx = $notroot_notleaf_rx =
+			qr#:?(?:[^/:]+:)*[^/:]+#;
+	} else {
+		$root_leaf_rx = $root_notleaf_rx = qr/[a-zA-Z_]\w*/;
+		$notroot_leaf_rx = $notroot_notleaf_rx = qr/\w+/;
+	}
 	croak "bad module name prefix `$prefix'"
-		unless $prefix =~ m#\A(?:[a-zA-Z_]\w*::(?:\w+::)*)?\z#;
+		unless $prefix =~ /\A(?:${root_notleaf_rx}::
+					 (?:${notroot_notleaf_rx}::)*)?\z/x &&
+			 $prefix !~ /(?:\A|[^:]::)\.\.?::/;
 	my $list_modules = $options->{list_modules};
 	my $list_prefixes = $options->{list_prefixes};
 	my $list_pod = $options->{list_pod};
@@ -103,15 +133,20 @@ sub list_modules($$) {
 	while(@prefixes) {
 		my $prefix = pop(@prefixes);
 		my $dir_suffix = $prefix;
-		$dir_suffix =~ s#(\w+)::#/$1#g;
-		my $module_rx = $prefix eq "" ? qr/[a-zA-Z_]\w*/ : qr/\w+/;
-		my $dir_rx = qr/\A$module_rx\z/;
+		$dir_suffix =~ s#::#/#g;
+		$dir_suffix =~ s#\A(.*)/\z#/$1#s;
+		my $module_rx =
+			$prefix eq "" ? $root_leaf_rx : $notroot_leaf_rx;
 		my $pm_rx = qr/\A($module_rx)\.pmc?\z/;
 		my $pod_rx = qr/\A($module_rx)\.pod\z/;
+		my $dir_rx =
+			$prefix eq "" ? $root_notleaf_rx : $notroot_notleaf_rx;
+		$dir_rx = qr/\A$dir_rx\z/;
 		foreach my $incdir (@INC) {
 			my $dir = $incdir.$dir_suffix;
 			my $dh = IO::Dir->new($dir) or next;
 			while(defined(my $entry = $dh->read)) {
+				next if $entry =~ /\A\.\.?\z/;
 				if(($list_modules && $entry =~ $pm_rx) ||
 						($list_pod &&
 							$entry =~ $pod_rx)) {
@@ -143,7 +178,7 @@ Andrew Main (Zefram) <zefram@fysh.org>
 
 =head1 COPYRIGHT
 
-Copyright (C) 2004 Andrew Main (Zefram) <zefram@fysh.org>
+Copyright (C) 2004, 2006 Andrew Main (Zefram) <zefram@fysh.org>
 
 This module is free software; you can redistribute it and/or modify it
 under the same terms as Perl itself.
