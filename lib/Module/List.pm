@@ -26,13 +26,12 @@ use warnings;
 use strict;
 
 use Carp qw(croak);
-use Exporter;
+use File::Spec;
 use IO::Dir 1.03;
 
-our $VERSION = "0.001";
+our $VERSION = "0.002";
 
-our @ISA = qw(Exporter);
-
+use parent "Exporter";
 our @EXPORT_OK = qw(list_modules);
 
 =head1 FUNCTIONS
@@ -58,40 +57,41 @@ to be returned.  The options are:
 
 =item list_modules
 
-Boolean, default false.  If true, return names of modules in the relevant
+Truth value, default false.  If true, return names of modules in the relevant
 part of the namespace.
 
 =item list_prefixes
 
-Boolean, default false.  If true, return module name prefixes in the
+Truth value, default false.  If true, return module name prefixes in the
 relevant part of the namespace.  Note that prefixes are returned if the
 corresponding directory exists, even if there is nothing in it.
 
 =item list_pod
 
-Boolean, default false.  If true, return names of POD documentation
+Truth value, default false.  If true, return names of POD documentation
 files that are in the module namespace.
 
 =item trivial_syntax
 
-Boolean, default false.  If false, only valid bareword names are
+Truth value, default false.  If false, only valid bareword names are
 permitted.  If true, bareword syntax is ignored, and any "::"-separated
-name that can be turned into a correct filename by C<s!::!/!g> is
-permitted.  This is of no use in listing actual Perl modules, because the
-illegal names can't be used in Perl, but some programs such as B<perldoc>
-use a "::"-separated name for the sake of appearance without really
-using bareword syntax.  The loosened syntax applies both to the names
-returned and to the I<PREFIX> parameter.
+name that can be turned into a correct filename by interpreting name
+components as filename components is permitted.  This is of no use in
+listing actual Perl modules, because the illegal names can't be used in
+Perl, but some programs such as B<perldoc> use a "::"-separated name for
+the sake of appearance without really using bareword syntax.  The loosened
+syntax applies both to the names returned and to the I<PREFIX> parameter.
 
 Precisely, the `trivial syntax' is that each "::"-separated component
 cannot be "." or "..", cannot contain "::" or "/", and (except for the
 final component of a leaf name) cannot end with ":".  This is precisely
-what is required to achieve a unique interconvertible "::"-separated
-path syntax.
+what is required to achieve a unique interconvertible "::"-separated path
+syntax on Unix.  This criterion might change in the future on non-Unix
+systems, where the filename syntax differs.
 
 =item recurse
 
-Boolean, default false.  If false, only names at the next level down
+Truth value, default false.  If false, only names at the next level down
 from PREFIX (having one more component) are returned.  If true, names
 at all lower levels are returned.
 
@@ -115,8 +115,8 @@ sub list_modules($$) {
 		$root_notleaf_rx = $notroot_notleaf_rx =
 			qr#:?(?:[^/:]+:)*[^/:]+#;
 	} else {
-		$root_leaf_rx = $root_notleaf_rx = qr/[a-zA-Z_]\w*/;
-		$notroot_leaf_rx = $notroot_notleaf_rx = qr/\w+/;
+		$root_leaf_rx = $root_notleaf_rx = qr/[a-zA-Z_][0-9a-zA-Z_]*/;
+		$notroot_leaf_rx = $notroot_notleaf_rx = qr/[0-9a-zA-Z_]+/;
 	}
 	croak "bad module name prefix `$prefix'"
 		unless $prefix =~ /\A(?:${root_notleaf_rx}::
@@ -132,9 +132,7 @@ sub list_modules($$) {
 	my %results;
 	while(@prefixes) {
 		my $prefix = pop(@prefixes);
-		my $dir_suffix = $prefix;
-		$dir_suffix =~ s#::#/#g;
-		$dir_suffix =~ s#\A(.*)/\z#/$1#s;
+		my @dir_suffix = split(/::/, $prefix);
 		my $module_rx =
 			$prefix eq "" ? $root_leaf_rx : $notroot_leaf_rx;
 		my $pm_rx = qr/\A($module_rx)\.pmc?\z/;
@@ -143,17 +141,19 @@ sub list_modules($$) {
 			$prefix eq "" ? $root_notleaf_rx : $notroot_notleaf_rx;
 		$dir_rx = qr/\A$dir_rx\z/;
 		foreach my $incdir (@INC) {
-			my $dir = $incdir.$dir_suffix;
+			my $dir = File::Spec->catdir($incdir, @dir_suffix);
 			my $dh = IO::Dir->new($dir) or next;
 			while(defined(my $entry = $dh->read)) {
-				next if $entry =~ /\A\.\.?\z/;
 				if(($list_modules && $entry =~ $pm_rx) ||
 						($list_pod &&
 							$entry =~ $pod_rx)) {
 					$results{$prefix.$1} = undef;
 				} elsif(($list_prefixes || $recurse) &&
+						File::Spec
+							->no_upwards($entry) &&
 						$entry =~ $dir_rx &&
-						-d $dir."/".$entry) {
+						-d File::Spec->catdir($dir,
+							$entry)) {
 					my $newpfx = $prefix.$entry."::";
 					next if exists $seen_prefixes{$newpfx};
 					$results{$newpfx} = undef
@@ -178,7 +178,9 @@ Andrew Main (Zefram) <zefram@fysh.org>
 
 =head1 COPYRIGHT
 
-Copyright (C) 2004, 2006 Andrew Main (Zefram) <zefram@fysh.org>
+Copyright (C) 2004, 2006, 2009 Andrew Main (Zefram) <zefram@fysh.org>
+
+=head1 LICENSE
 
 This module is free software; you can redistribute it and/or modify it
 under the same terms as Perl itself.

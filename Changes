@@ -1,3 +1,25 @@
+version 0.002; 2009-05-20
+
+  * bugfix: avoid unreliable "\w" in regexps in code
+
+  * portable filename handling using File::Spec, to work on non-Unix
+    systems
+
+  * use "parent" pragma to import Exporter behaviour
+
+  * in documentation, use the term "truth value" instead of the less
+    precise "boolean"
+
+  * test POD syntax and coverage
+
+  * build with Module::Build instead of ExtUtils::MakeMaker
+
+  * complete dependency list
+
+  * include signature in distribution
+
+  * in documentation, separate "license" section from "copyright" section
+
 version 0.001; 2006-06-29
 
   * new "trivial_syntax" option for pseudo-bareword syntax

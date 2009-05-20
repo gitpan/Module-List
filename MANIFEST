@@ -1,4 +1,5 @@
 .cvsignore
+Build.PL
 Changes
 MANIFEST
 META.yml
@@ -6,3 +7,6 @@ Makefile.PL
 README
 lib/Module/List.pm
 t/list.t
+t/pod_cvg.t
+t/pod_syn.t
+SIGNATURE    Added here by Module::Build
