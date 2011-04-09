@@ -1,3 +1,6 @@
+use warnings;
+use strict;
+
 use Test::More tests => 43;
 
 BEGIN { use_ok "Module::List", qw(list_modules); }
@@ -36,3 +39,5 @@ test_presence($r, 0, 0, 1, 0, 0, 0);
 
 $r = list_modules("foo::", { list_modules => 1, list_prefixes => 1 });
 test_presence($r, 0, 0, 0, 0, 0, 0);
+
+1;

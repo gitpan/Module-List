@@ -22,6 +22,7 @@ a view of the abstract namespace.
 
 package Module::List;
 
+{ use 5.006; }
 use warnings;
 use strict;
 
@@ -29,7 +30,7 @@ use Carp qw(croak);
 use File::Spec;
 use IO::Dir 1.03;
 
-our $VERSION = "0.002";
+our $VERSION = "0.003";
 
 use parent "Exporter";
 our @EXPORT_OK = qw(list_modules);
@@ -95,6 +96,15 @@ Truth value, default false.  If false, only names at the next level down
 from PREFIX (having one more component) are returned.  If true, names
 at all lower levels are returned.
 
+=item use_pod_dir
+
+Truth value, default false.  If false, POD documentation files are
+expected to be in the same directory that the corresponding module file
+would be in.  If true, POD files may also be in a subdirectory of that
+named "C<pod>".  (Any POD files in such a subdirectory will therefore be
+visible under two module names, one treating the "C<pod>" subdirectory
+level as part of the module name.)
+
 =back
 
 Note that the default behaviour, if an empty options hash is supplied, is
@@ -125,6 +135,7 @@ sub list_modules($$) {
 	my $list_modules = $options->{list_modules};
 	my $list_prefixes = $options->{list_prefixes};
 	my $list_pod = $options->{list_pod};
+	my $use_pod_dir = $options->{use_pod_dir};
 	return {} unless $list_modules || $list_prefixes || $list_pod;
 	my $recurse = $options->{recurse};
 	my @prefixes = ($prefix);
@@ -161,6 +172,14 @@ sub list_modules($$) {
 					push @prefixes, $newpfx if $recurse;
 				}
 			}
+			next unless $list_pod && $use_pod_dir;
+			$dir = File::Spec->catdir($dir, "pod");
+			$dh = IO::Dir->new($dir) or next;
+			while(defined(my $entry = $dh->read)) {
+				if($entry =~ $pod_rx) {
+					$results{$prefix.$1} = undef;
+				}
+			}
 		}
 	}
 	return \%results;
@@ -178,7 +197,8 @@ Andrew Main (Zefram) <zefram@fysh.org>
 
 =head1 COPYRIGHT
 
-Copyright (C) 2004, 2006, 2009 Andrew Main (Zefram) <zefram@fysh.org>
+Copyright (C) 2004, 2006, 2009, 2011
+Andrew Main (Zefram) <zefram@fysh.org>
 
 =head1 LICENSE
 

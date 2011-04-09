@@ -1,5 +1,5 @@
 This file contains message digests of all files listed in MANIFEST,
-signed via the Module::Signature module, version 0.55.
+signed via the Module::Signature module, version 0.66.
 
 To verify the content in this distribution, first make sure you have
 Module::Signature installed, then type:
@@ -14,21 +14,22 @@ not run its Makefile.PL or Build.PL.
 -----BEGIN PGP SIGNED MESSAGE-----
 Hash: SHA1
 
-SHA1 e5ca0305843deaa1df74ce9cc531a4e8f482d620 .cvsignore
-SHA1 7f2397d40d5bae399408983ea06c09ff934e3c56 Build.PL
-SHA1 b667b9e4086fabe2e9e41b5f9578e28448a061e8 Changes
-SHA1 b63141631ba89531face859e3259bf5721b0bd6e MANIFEST
-SHA1 114e5c851f07541fa6900b1b422ffec5e7465eec META.yml
-SHA1 f39315b8e83202006e8a916c6a58725d104f75ec Makefile.PL
-SHA1 ac1e2de216413e609fc3942356e449f6add72079 README
-SHA1 7f3b2e03b5f7ef95c3c5f10c490e398f46aa44fa lib/Module/List.pm
-SHA1 00f1a9557a04c776a955412635db1a47fa856199 t/list.t
-SHA1 0e141eecf3ca4903ef38d9413b5403a9ddb0392f t/pod_cvg.t
-SHA1 74a957cd8b93f25672ecc6aa578a671d084dd343 t/pod_syn.t
+SHA1 a5110bc97a645a88ff231a00a39d32b3398094b7 .cvsignore
+SHA1 5950f7cd62951b1b590c696a828a948902895301 Build.PL
+SHA1 1474dbabd17284c7724f9be7343d95f2d5a8bcc8 Changes
+SHA1 85dfeb87871a0b2bb82df60fa608b14ed6816d27 MANIFEST
+SHA1 8cf36e3409b212faec3046c6a54e65b5fb593846 META.json
+SHA1 009e56eadefea4bc030adf7a5b3bf2eafbe3cd32 META.yml
+SHA1 a4df8e97ccd390a42212af5a9f4d0986c85e7a5f Makefile.PL
+SHA1 1ec716e2c9c39ecfde5b8a1f3438adc325cf3c14 README
+SHA1 105eac22eed0d78cce47419b0e469d045df18649 lib/Module/List.pm
+SHA1 557a549718a9a5668dd479ced6b9608e37491fa9 t/list.t
+SHA1 904d9a4f76525e2303e4b0c168c68230f223c8de t/pod_cvg.t
+SHA1 65c75abdef6f01a5d1588a307f2ddfe2333dc961 t/pod_syn.t
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
+Version: GnuPG v1.4.10 (GNU/Linux)
 
-iEYEARECAAYFAkoTq3gACgkQOV9mt2VyAVFIKgCdHC55/Ui9frsxp90chS40EaMk
-H+AAn0NjQYUt6yQ+guEpCXu0zg4UiK/f
-=2VfF
+iEYEARECAAYFAk2gdngACgkQOV9mt2VyAVHD5gCfQIXrv/zsehOpTIURpTJHeOMh
+WgQAn12S+/V2TRIWHn2b+VNRsWk0cUnr
+=7xTV
 -----END PGP SIGNATURE-----
